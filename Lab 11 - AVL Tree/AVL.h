@@ -17,12 +17,6 @@ private:
         
         /** Initialize node with data and NULL links */
         Node(const T& d) : data(d), left(NULL), right(NULL), balance(BALANCED) {}
-        
-//        /** Delete links when destroyed (Allows recursive tree memory reallocation) */
-//        ~Node() {
-//            delete left;
-//            delete right;
-//        }
     };
     
     Node* root;
@@ -40,6 +34,7 @@ private:
         if (node == NULL) return true;
         if (node -> left) deleteTree(node -> left);
         if (node -> right) deleteTree(node -> right);
+        
         delete node;
         return true;
     }
@@ -49,12 +44,14 @@ private:
         if (node == NULL) return false;
         else if (data < node -> data) return find(data, node -> left);
         else if (data > node -> data) return find(data, node -> right);
+        
         return true;
     }
     
     /** Find in-order predecessor to a node, used by remove() */
     Node* inPredecessor(Node* node) const {
         if (node != NULL && node -> right) return inPredecessor(node -> right);
+        
         return node;
     }
     
@@ -70,6 +67,7 @@ private:
     void rotateLeft(Node*& root) {
         Node* temp = root -> right;
         if (!temp) return;
+        
         root -> right = temp -> left;
         temp -> left = root;
         root = temp;
@@ -78,6 +76,7 @@ private:
     void rotateRight(Node*& root) {
         Node* temp = root -> left;
         if (!temp) return;
+        
         root -> left = temp -> right;
         temp -> right = root;
         root = temp;
@@ -91,6 +90,7 @@ private:
         }
         if (data < root -> data) {
             bool returnValue = insert(root -> left, data);
+            
             if (increase) {
                 switch (root -> balance) {
                     case Node::BALANCED:
@@ -109,6 +109,7 @@ private:
             return returnValue;
         } else if (data > root -> data) {
             bool returnValue = insert(root -> right, data);
+            
             if (increase) {
                 switch (root -> balance) {
                     case Node::BALANCED:
@@ -135,6 +136,7 @@ private:
         if (root == NULL) return 0;
         else if (data < root -> data) return 1 + height(root -> left, data);
         else if (data > root -> data) return 1 + height(root -> right, data);
+        
         return 0;
     }
     
@@ -158,51 +160,65 @@ public:
     
     void rebalanceLeft(Node*& root) {
         Node* leftChild = root -> left ? root -> left : NULL;
+        
         if (leftChild && leftChild -> balance == Node::RIGHT_HEAVY) {
             Node* leftRightChild = leftChild -> right ? leftChild -> right : NULL;
+            
             if (leftRightChild && leftRightChild -> balance == Node::LEFT_HEAVY) {
                 leftChild -> balance = Node::BALANCED;
                 leftRightChild -> balance = Node::BALANCED;
                 root -> balance = Node::RIGHT_HEAVY;
-            } else if (leftRightChild && leftRightChild -> balance == Node::BALANCED) {
+            }
+            else if (leftRightChild && leftRightChild -> balance == Node::BALANCED) {
                 leftChild -> balance = Node::BALANCED;
                 leftRightChild -> balance = Node::BALANCED;
                 root -> balance = Node::BALANCED;
-            } else if (leftRightChild){
+            }
+            else if (leftRightChild){
                 leftChild -> balance = Node::LEFT_HEAVY;
                 leftRightChild -> balance = Node::BALANCED;
                 root -> balance = Node::BALANCED;
             }
+            
             rotateLeft(root -> left);
-        } else {
+        }
+        else {
             leftChild -> balance = Node::BALANCED;
             root -> balance = Node::BALANCED;
         }
+        
         rotateRight(root);
     }
     
     void rebalanceRight(Node*& root) {
         Node* rightChild = root -> right ? root -> right : NULL;
+        
         if (rightChild && rightChild -> balance == Node::LEFT_HEAVY) {
             Node* rightLeftChild = rightChild -> left ? rightChild -> left : NULL;
+            
             if (rightLeftChild && rightLeftChild -> balance == Node::RIGHT_HEAVY) {
                 rightChild -> balance = Node::BALANCED;
                 rightLeftChild -> balance = Node::BALANCED;
                 root -> balance = Node::LEFT_HEAVY;
-            } else if (rightLeftChild && rightLeftChild -> balance == Node::BALANCED) {
+            }
+            else if (rightLeftChild && rightLeftChild -> balance == Node::BALANCED) {
                 rightChild -> balance = Node::BALANCED;
                 rightLeftChild -> balance = Node::BALANCED;
                 root -> balance = Node::BALANCED;
-            } else if (rightLeftChild){
+            }
+            else if (rightLeftChild){
                 rightChild -> balance = Node::RIGHT_HEAVY;
                 rightLeftChild -> balance = Node::BALANCED;
                 root -> balance = Node::BALANCED;
             }
+            
             rotateRight(root -> right);
-        } else {
+        }
+        else {
             rightChild -> balance = Node::BALANCED;
             root -> balance = Node::BALANCED;
         }
+        
         rotateLeft(root);
     }
     
@@ -210,15 +226,12 @@ public:
     virtual bool removeNode(const T& data) {
         bool ret = remove(data, root);
         balanceTree();
+        
         return ret;
     }
     
     /** Return true if BST cleared of all nodes, else false */
     virtual bool clearTree() {
-        //delete root;
-//        root = NULL;
-//        size = 0;
-//        return true;
         return resetTree(root);
     }
     
@@ -235,11 +248,15 @@ public:
     /** Return a level order traversal of a BST as a string */
     virtual std::string toString() const {
         std::ostringstream out;
+        
         if (root == NULL) return " empty";
         int level = -1;
+        
         do {
             out << std::endl << ++level + 1 << ":";
-        } while (outLevel(root, level, out));
+        }
+        while (outLevel(root, level, out));
+        
         return out.str();
     }
     
@@ -256,6 +273,7 @@ public:
     void copyData(Node*& newRoot, Node* root) {
         if (root == NULL) return;
         insert(newRoot, root -> data);
+        
         if (root -> left) copyData(newRoot, root -> left);
         if (root -> right) copyData(newRoot, root -> right);
     }
@@ -272,10 +290,10 @@ public:
     }
     
     void replaceParent(Node*& oldNode, Node*& node) {
-//        std::cout << "Replacing " << oldNode -> data << " with " << node -> data << std::endl;
         if (node -> right != NULL) {
             replaceParent(oldNode, node -> right);
-        } else {
+        }
+        else {
             std::cout << "OTHER" << std::endl;
             oldNode -> data = node -> data;
             oldNode = node;
@@ -287,37 +305,6 @@ public:
 /** Recursive function to remove called by removeNode() (Outside class since >10 lines) */
 template<typename T>
 bool AVL<T>::remove(const T& data, Node*& node) {
-//    // Find node, then determine which of the 3 cases applies: 0 children, 1 children, or 2 children
-//    if (node == NULL) return false;
-//    else if (data < node -> data) return remove(data, node -> left);
-//    else if (data > node -> data) return remove(data, node -> right);
-//    else if (!node -> left && !node -> right) {
-//        // If no children, just delete the node
-//        delete node;
-//        node = NULL;
-//        --size;
-//        return true;
-//    }
-//    else if (node -> left && !node -> right) {
-//        // If one child (left), swap data between parent and child
-//        node -> data = node -> left -> data;
-//        delete node -> left;
-//        node -> left = NULL;
-//        --size;
-//        return true;
-//    }
-//    else if (node -> right && !node -> left) {
-//        // If one child (right), swap data between parent and child
-//        node -> data = node -> right -> data;
-//        delete node -> right;
-//        node -> right = NULL;
-//        --size;
-//        return true;
-//    }
-//    // If 2 children, replace parent with in-order predecessor then remove on parent's left child
-//    Node* pre = inPredecessor(node -> left);
-//    std::swap(node -> data, pre -> data);
-//    return remove(data, node -> left);
     if (node == NULL) return false;
     else if (data < node -> data) return remove(data, node -> left);
     else if (data > node -> data) return remove(data, node -> right);
@@ -358,8 +345,10 @@ bool AVL<T>::outLevel(Node* node, int level, std::ostream& out) const {
         return false;
     }
     else if (level == 1 && !node -> left && node -> right) out << " _";
+    
     bool left = outLevel(node -> left, level - 1, out);
     bool right = outLevel(node -> right, level - 1, out);
+    
     if (level == 1 && node -> left && !node -> right) out << " _";
     return left || right;
 }
@@ -372,6 +361,7 @@ bool AVL<T>::add(const T& data, Node*& node) {
         ++size;
         return true;
     }
+    
     else if (data < node -> data) return add(data, node -> left);
     else if (data > node -> data) return add(data, node -> right);
     else return false;
